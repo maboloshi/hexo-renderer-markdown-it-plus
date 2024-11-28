@@ -1,6 +1,6 @@
 {
-  "name": "hexo-renderer-markdown-it-plus",
-  "version": "1.0.6",
+  "name": "@reimujs/hexo-renderer-markdown-it-plus",
+  "version": "1.0.0",
   "description": "A faster and CommonMark compliant alternative for Hexo.",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus.git"
+    "url": "git+https://github.com/D-Sketon/hexo-renderer-markdown-it-plus.git"
   },
   "keywords": [
     "hexo",
@@ -19,22 +19,22 @@
   "author": "CHENXCHEN",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus/issues"
+    "url": "https://github.com/D-Sketon/hexo-renderer-markdown-it-plus/issues"
   },
-  "homepage": "https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus#readme",
+  "homepage": "https://github.com/D-Sketon/hexo-renderer-markdown-it-plus#readme",
   "dependencies": {
-    "@iktakahiro/markdown-it-katex": "^4.0.1",
+    "@vscode/markdown-it-katex": "^1.1.0",
     "clone": "^2.1.1",
     "highlight.js": "^11.5.1",
-    "markdown-it": "^13.0.1",
-    "markdown-it-abbr": "^1.0.4",
-    "markdown-it-deflist": "^2.1.0",
-    "markdown-it-emoji": "^2.0.2",
-    "markdown-it-footnote": "^3.0.3",
-    "markdown-it-ins": "^3.0.1",
-    "markdown-it-mark": "^3.0.1",
-    "markdown-it-sub": "^1.0.0",
-    "markdown-it-sup": "^1.0.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-abbr": "^2.0.0",
+    "markdown-it-deflist": "^3.0.0",
+    "markdown-it-emoji": "^3.0.0",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-ins": "^4.0.0",
+    "markdown-it-mark": "^4.0.0",
+    "markdown-it-sub": "^2.0.0",
+    "markdown-it-sup": "^2.0.0",
     "markdown-it-toc": "^1.1.0",
     "uslug": "^1.0.4"
   }

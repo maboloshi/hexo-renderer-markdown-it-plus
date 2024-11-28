@@ -1,4 +1,4 @@
-# hexo-renderer-markdown-it-plus
+# @reimujs/hexo-renderer-markdown-it-plus
 
 This renderer plugin uses Markdown-it as a render engine on Hexo.
 
