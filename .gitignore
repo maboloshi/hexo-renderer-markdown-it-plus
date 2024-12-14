@@ -3,3 +3,5 @@ node_modules/
 npm-debug.log
 git-debug.log
 .DS_Store
+dist/
+package-lock.json
