@@ -2,7 +2,9 @@
 
 This renderer plugin uses Markdown-it as a render engine on Hexo.
 
-This renderer plugin is forked from [hexo-renderer-markdown-it-plus](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus).
+This renderer plugin is forked from [hexo-renderer-markdown-it-plus](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus), designed for [hexo-theme-reimu](https://github.com/D-Sketon/hexo-theme-reimu).
+
+The highlight.js has been removed, the KaTeX version has been upgraded, and the client-side rendering of LaTeX formulas is supported.
 
 ## Main Features
 + Support for Markdown
@@ -30,7 +32,6 @@ Configuring the renderer is a fairly simple task because all the settings are in
 
 ```yml
 markdown_it_plus:
-    highlight: true
     html: true
     xhtmlOut: true
     breaks: true
@@ -38,7 +39,7 @@ markdown_it_plus:
     linkify: true
     typographer:
     quotes: “”‘’
-    pre_class: highlight
+    rawLaTeX: false # newly added
 ```
 
 ## Katex
@@ -50,7 +51,6 @@ Katex plugin is enabled by default. However, this renderer alone does not work o
 The markdown-it plugins listed above is enabled by default. If you want to disable any plugin, see the configuration example below:
 ```yml
 markdown_it_plus:
-    highlight: true
     html: true
     xhtmlOut: true
     breaks: true
@@ -58,6 +58,7 @@ markdown_it_plus:
     linkify: true
     typographer:
     quotes: “”‘’
+    rawLaTeX: false
     plugins:
         - plugin:
             name: markdown-it-mark

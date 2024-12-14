@@ -31,6 +31,7 @@ interface MarkdownItConfig {
   typographer?: boolean;
   langPrefix?: string;
   quotes?: string;
+  rawLaTeX?: boolean;
   plugins?: PluginConfig[];
 }
 
@@ -73,6 +74,7 @@ function checkConfig(config: MarkdownItConfig): MarkdownItConfig {
   checkValue(config, res, "breaks", true, false);
   checkValue(config, res, "linkify", true, false);
   checkValue(config, res, "typographer", true, false);
+  res["rawLaTeX"] = config["rawLaTeX"] || false;
   res["langPrefix"] = config["langPrefix"] || "";
   res["quotes"] = config["quotes"] || "“”‘’";
   return res;
@@ -81,7 +83,10 @@ function checkConfig(config: MarkdownItConfig): MarkdownItConfig {
 /**
  * General default plugin config
  */
-function checkPlugins(pugs: PluginConfig[]): Plugin[] {
+function checkPlugins(
+  pugs: PluginConfig[],
+  config: MarkdownItConfig
+): Plugin[] {
   const defPugsObj: Record<string, Plugin> = {};
 
   for (const pug of defPugsList) {
@@ -111,6 +116,16 @@ function checkPlugins(pugs: PluginConfig[]): Plugin[] {
     result.unshift(defPugsObj[defPugsList[i]]);
   }
 
+  if (config.rawLaTeX) {
+    // set markdown-it-katex to false
+    for (let i = 0; i < result.length; i++) {
+      if (result[i].name === "@vscode/markdown-it-katex") {
+        result[i].enable = false;
+        break;
+      }
+    }
+  }
+
   return result;
 }
 
@@ -121,30 +136,29 @@ export = function (this: Hexo, data: { text: string }): string {
   let md = MarkdownIt(parseConfig);
 
   config.plugins = config.plugins || [];
-  const plugins = checkPlugins(config.plugins);
+  const plugins = checkPlugins(config.plugins, config);
+
+  if (config.rawLaTeX) {
+    md.use(require("./markdown-it-raw-latex/index.js"));
+  }
 
   md = plugins.reduce((mdInstance, pug) => {
     if (pug.enable) {
+      let plugin = require(pug.name);
       if (pug.name === "markdown-it-toc-and-anchor") {
         pug.options = pug.options || {};
         if (!pug.options.anchorLinkSymbol) pug.options.anchorLinkSymbol = "";
         if (!pug.options.tocFirstLevel) pug.options.tocFirstLevel = 2;
-
-        const tocAndAnchor =
-          require("markdown-it-toc-and-anchor").default;
-        return mdInstance.use(tocAndAnchor, pug.options);
-      } else {
-        let plugin = require(pug.name);
-        if (
-          typeof plugin !== "function" &&
-          typeof plugin.default === "function"
-        ) {
-          plugin = plugin.default;
-        }
-        return pug.options
-          ? mdInstance.use(plugin, pug.options)
-          : mdInstance.use(plugin);
       }
+      if (
+        typeof plugin !== "function" &&
+        typeof plugin.default === "function"
+      ) {
+        plugin = plugin.default;
+      }
+      return pug.options
+        ? mdInstance.use(plugin, pug.options)
+        : mdInstance.use(plugin);
     }
     return mdInstance;
   }, md);

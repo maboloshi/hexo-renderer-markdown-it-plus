@@ -63,6 +63,86 @@ $$</p>
 `);
   });
 
+  it('plugin - raw latex - math block', () => {
+    const Hexo = {
+      config: {
+        markdown_it_plus: {
+          rawLaTeX: true,
+        },
+      },
+    };
+    let data = {
+      text: "$$a^2 + b^2 = c^2$$",
+    };
+    let result = render.call(Hexo, data);
+    expect(result).toBe("<p>$$a^2 + b^2 = c^2\n$$</p>");
+
+    data = {
+      text: `$$
+a^2 + b^2 = c^2
+$$`,
+    };
+    result = render.call(Hexo, data);
+    expect(result).toBe("<p>$$a^2 + b^2 = c^2\n$$</p>");
+    
+
+    data = {
+      text: String.raw`$$
+\begin{align}
+&\underset{\boldsymbol{w}}{\min}\sum_{i=1}^N{\left( \boldsymbol{p}_i\boldsymbol{w} \right) ^2 },\,\, s.t. \,\left\| \boldsymbol{w} \right\| _2=1 \notag
+\\
+\Rightarrow &\underset{\boldsymbol{w}}{\min}\,\,\boldsymbol{w}^T\boldsymbol{P}^T\boldsymbol{Pw},\,\, s.t.\, \boldsymbol{w}^T\boldsymbol{w}=1
+\end{align}
+$$`
+    }
+    result = render.call(Hexo, data);
+    expect(result).toBe(String.raw`<p>$$\begin{align}
+&\underset{\boldsymbol{w}}{\min}\sum_{i=1}^N{\left( \boldsymbol{p}_i\boldsymbol{w} \right) ^2 },\,\, s.t. \,\left\| \boldsymbol{w} \right\| _2=1 \notag
+\\
+\Rightarrow &\underset{\boldsymbol{w}}{\min}\,\,\boldsymbol{w}^T\boldsymbol{P}^T\boldsymbol{Pw},\,\, s.t.\, \boldsymbol{w}^T\boldsymbol{w}=1
+\end{align}
+$$</p>`);
+  });
+
+  it('plugin - raw latex - inline math', () => {
+    const Hexo = {
+      config: {
+        markdown_it_plus: {
+          rawLaTeX: true,
+        },
+      },
+    };
+    let data = {
+      text: "$a^2 + b^2 = c^2$",
+    };
+    let result = render.call(Hexo, data);
+    expect(result).toBe("<p>$a^2 + b^2 = c^2$</p>\n");
+
+    data = {
+      text: `$
+a^2 + b^2 = c^2
+$`,
+    };
+
+    result = render.call(Hexo, data);
+    expect(result).toBe("<p>$\na^2 + b^2 = c^2\n$</p>\n");
+  });
+
+  it('plugin - raw latex - math in code block', () => {
+    const Hexo = {
+      config: {
+        markdown_it_plus: {
+          rawLaTeX: true,
+        },
+      },
+    };
+    const data = {
+      text: "```latex\n$$a^2 + b^2 = c^2$$\n```",
+    };
+    const result = render.call(Hexo, data);
+    expect(result).toBe("<pre><code class=\"latex\">$$a^2 + b^2 = c^2$$\n</code></pre>\n");
+  });
+
   it('plugin - emoji - ":smile:"', () => {
     const Hexo = {
       config: {
