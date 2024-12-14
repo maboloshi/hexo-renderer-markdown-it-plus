@@ -2,10 +2,7 @@
 
 This renderer plugin uses Markdown-it as a render engine on Hexo.
 
-This renderer plugin is forked from [hexo-renderer-markdown-it](https://github.com/hexojs/hexo-renderer-markdown-it/blob/master/lib/renderer.js).
-Add some plugins and support third-part `markdown-it` plugin.
-
-This is [demo project](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus-demo.git).
+This renderer plugin is forked from [hexo-renderer-markdown-it-plus](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus).
 
 ## Main Features
 + Support for Markdown
@@ -14,7 +11,7 @@ This is [demo project](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-pl
 + [sub](https://www.npmjs.com/package/markdown-it-sub), `H~2~0` H<sub>2</sub>0
 + [sup](https://www.npmjs.com/package/markdown-it-sup), `x^2^` x<sup>2</sup>
 + [ins](https://www.npmjs.com/package/markdown-it-ins), `++Inserted++` <ins>Inserted</ins>, `~~Del~~` <s>Del</s>
-+ [Katex](https://www.npmjs.com/package/@iktakahiro/markdown-it-katex), [referer](https://github.com/Khan/KaTeX)
++ [Katex](https://www.npmjs.com/package/@vscode/markdown-it-katex), [referer](https://github.com/Khan/KaTeX)
 + [emoji](https://www.npmjs.com/package/markdown-it-emoji), [referer](https://www.webpagefx.com/tools/emoji-cheat-sheet/)
 + [toc&anchor](https://www.npmjs.com/package/markdown-it-toc-and-anchor) `@[toc]`
 + [deflist](http://pandoc.org/MANUAL.html#definition-lists)
@@ -25,7 +22,7 @@ This is [demo project](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-pl
 ## Install
 ```shell
 npm un hexo-renderer-marked --save
-npm i hexo-renderer-markdown-it-plus --save
+npm i @reimujs/hexo-renderer-markdown-it-plus --save
 ```
 
 ## Options
@@ -47,7 +44,7 @@ markdown_it_plus:
 ## Katex
 
 Katex plugin is enabled by default. However, this renderer alone does not work out of the box for mathematical formulas to display correctly on your website. Therefore, you do not need to do anything if you do not want to use Katex. Otherwise, if you want to use katex, you must add this css style to your website:
-`https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css`
+`https://npm.webcache.cn/katex@0.16.11/dist/katex.min.css`
 
 ## Advanced Options
 The markdown-it plugins listed above is enabled by default. If you want to disable any plugin, see the configuration example below:
@@ -75,7 +72,7 @@ plugins enabled by default:
  + `markdown-it-footnote`  
  + `markdown-it-ins`  
  + `markdown-it-mark`  
- + `@iktakahiro/markdown-it-katex`  
+ + `@vscode/markdown-it-katex`  
  + `markdown-it-toc-and-anchor`  
 
 ## Add other `markdown-it` Plugins
@@ -97,12 +94,3 @@ markdown_it_plus:
             options:
                 # this is plugin option
 ```
-
-## LOG
-
-+ **1.0.1** Add `pre_class` option.
-+ **1.0.2** Add `highlight.js` pakage to dependencies[#2](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus/issues/2).
-+ **1.0.3** Update `katex` plugin, using `katex 0.9`
-+ **1.0.4** PR [#17](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus/pull/17)
-+ **1.0.5** upgrade dependencies for @iktakahiro/markdown-it-katex@4.0.1, highlight.js@11.5.1, markdown-it@13.0.1, and others markdown-it plugins version...
-+ **1.0.6** PR [#34](https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus/pull/34)
