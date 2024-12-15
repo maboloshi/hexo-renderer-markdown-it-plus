@@ -18,16 +18,15 @@ describe("renderer", () => {
       },
     };
     const data = {
-      text: "$$a^2 + b^2 = c^2$$",
+      text: "$a^2 + b^2 = c^2$",
     };
     const result = render.call(Hexo, data);
     expect(result)
-      .toBe(`<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2 + b^2 = c^2
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9474em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8641em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8641em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></p>
+      .toBe(`<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2 + b^2 = c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></p>
 `);
     Hexo.config.markdown_it_plus.plugins[0].plugin.enable = false;
     const result2 = render.call(Hexo, data);
-    expect(result2).toBe("<p>$$a^2 + b^2 = c^2$$</p>\n");
+    expect(result2).toBe("<p>$a^2 + b^2 = c^2$</p>\n");
   });
 
   it("plugin - katex - multiple lines", () => {
@@ -85,6 +84,12 @@ $$`,
     result = render.call(Hexo, data);
     expect(result).toBe("<p>$$a^2 + b^2 = c^2\n$$</p>");
     
+    data = {
+      text: String.raw`$$\int \frac{x^3}{(1+x^2)^{3/2}}  $$`
+    }
+    result = render.call(Hexo, data);
+    expect(result).toBe(String.raw`<p>$$\int \frac{x^3}{(1+x^2)^{3/2}}  
+$$</p>`);
 
     data = {
       text: String.raw`$$
@@ -113,19 +118,26 @@ $$</p>`);
       },
     };
     let data = {
-      text: "$a^2 + b^2 = c^2$",
+      text: "$a^2+b^2=c^2$",
     };
     let result = render.call(Hexo, data);
-    expect(result).toBe("<p>$a^2 + b^2 = c^2$</p>\n");
+    expect(result).toBe("<p>$a^2+b^2=c^2$</p>\n");
 
     data = {
       text: `$
-a^2 + b^2 = c^2
+a^2+b^2=c^2
 $`,
     };
 
     result = render.call(Hexo, data);
-    expect(result).toBe("<p>$\na^2 + b^2 = c^2\n$</p>\n");
+    expect(result).toBe("<p>$\na^2+b^2=c^2\n$</p>\n");
+
+    data = {
+      text: String.raw`$\int \frac{x^3}{(1+x^2)^{3/2}}  $`
+    }
+    result = render.call(Hexo, data);
+    expect(result).toBe(String.raw`<p>$\int \frac{x^3}{(1+x^2)^{3/2}}  $</p>
+`);
   });
 
   it('plugin - raw latex - math in code block', () => {

@@ -1,50 +1,72 @@
-// https://github.com/waylonflinn/markdown-it-katex/blob/master/index.js
+// https://github.com/microsoft/vscode-markdown-it-katex
 import type MarkdownIt from "markdown-it";
 import type { Token, StateBlock, StateInline } from "markdown-it";
 
+function isWhitespace(char: string) {
+  return /^\s$/u.test(char);
+}
+function isWordCharacterOrNumber(char: string) {
+  return /^[\w\d]$/u.test(char);
+}
 // Test if potential opening or closing delimieter
 // Assumes that there is a "$" at state.src[pos]
-function isValidDelim(state: StateInline, pos: number) {
-  var prevChar: number,
-    nextChar: number,
-    max = state.posMax,
-    can_open = true,
-    can_close = true;
-
-  prevChar = pos > 0 ? state.src.charCodeAt(pos - 1) : -1;
-  nextChar = pos + 1 <= max ? state.src.charCodeAt(pos + 1) : -1;
-
-  // Check non-whitespace conditions for opening and closing, and
-  // check that closing delimeter isn't followed by a number
+function isValidInlineDelim(state: StateInline, pos: number) {
+  const prevChar = state.src[pos - 1];
+  const char = state.src[pos];
+  const nextChar = state.src[pos + 1];
+  if (char !== "$") {
+    return { can_open: false, can_close: false };
+  }
+  let canOpen = false;
+  let canClose = false;
   if (
-    prevChar === 0x20 /* " " */ ||
-    prevChar === 0x09 /* \t */ ||
-    (nextChar >= 0x30 /* "0" */ && nextChar <= 0x39) /* "9" */
+    prevChar !== "$" &&
+    prevChar !== "\\" &&
+    (prevChar === undefined ||
+      isWhitespace(prevChar) ||
+      !isWordCharacterOrNumber(prevChar))
   ) {
-    can_close = false;
+    canOpen = true;
   }
-  if (nextChar === 0x20 /* " " */ || nextChar === 0x09 /* \t */) {
-    can_open = false;
+  if (
+    nextChar !== "$" &&
+    (nextChar == undefined ||
+      isWhitespace(nextChar) ||
+      !isWordCharacterOrNumber(nextChar))
+  ) {
+    canClose = true;
   }
-
-  return {
-    can_open,
-    can_close,
-  };
+  return { can_open: canOpen, can_close: canClose };
+}
+function isValidBlockDelim(state: StateBlock | StateInline, pos: number) {
+  const prevChar = state.src[pos - 1];
+  const char = state.src[pos];
+  const nextChar = state.src[pos + 1];
+  const nextCharPlus1 = state.src[pos + 2];
+  if (
+    char === "$" &&
+    prevChar !== "$" &&
+    prevChar !== "\\" &&
+    nextChar === "$" &&
+    nextCharPlus1 !== "$"
+  ) {
+    return { can_open: true, can_close: true };
+  }
+  return { can_open: false, can_close: false };
 }
 
-function math_inline(state: StateInline, silent: boolean) {
-  let start: number,
-    match: number,
-    token: Token,
-    res: { can_open: boolean; can_close: boolean },
-    pos: number;
-
+function inlineMath(state: StateInline, silent: boolean) {
   if (state.src[state.pos] !== "$") {
     return false;
   }
-
-  res = isValidDelim(state, state.pos);
+  const lastToken = state.tokens.at(-1);
+  if (lastToken?.type === "html_inline") {
+    // We may be inside of inside of inline html
+    if (/^<\w+.+[^/]>$/.test(lastToken.content)) {
+      return false;
+    }
+  }
+  let res = isValidInlineDelim(state, state.pos);
   if (!res.can_open) {
     if (!silent) {
       state.pending += "$";
@@ -52,13 +74,13 @@ function math_inline(state: StateInline, silent: boolean) {
     state.pos += 1;
     return true;
   }
-
   // First check for and bypass all properly escaped delimieters
   // This loop will assume that the first leading backtick can not
   // be the first character in state.src, which is known since
   // we have found an opening delimieter already.
-  start = state.pos + 1;
-  match = start;
+  let start = state.pos + 1;
+  let match = start;
+  let pos;
   while ((match = state.src.indexOf("$", match)) !== -1) {
     // Found potential $, look for escapes, pos will point to
     // first non escape when complete
@@ -66,14 +88,12 @@ function math_inline(state: StateInline, silent: boolean) {
     while (state.src[pos] === "\\") {
       pos -= 1;
     }
-
     // Even number of escapes, potential closing delimiter found
     if ((match - pos) % 2 == 1) {
       break;
     }
     match += 1;
   }
-
   // No closing delimter found.  Consume $ and continue.
   if (match === -1) {
     if (!silent) {
@@ -82,7 +102,6 @@ function math_inline(state: StateInline, silent: boolean) {
     state.pos = start;
     return true;
   }
-
   // Check if we have empty content, ie: $$.  Do not parse.
   if (match - start === 0) {
     if (!silent) {
@@ -91,9 +110,8 @@ function math_inline(state: StateInline, silent: boolean) {
     state.pos = start + 1;
     return true;
   }
-
   // Check for valid closing delimiter
-  res = isValidDelim(state, match);
+  res = isValidInlineDelim(state, match);
   if (!res.can_close) {
     if (!silent) {
       state.pending += "$";
@@ -101,42 +119,35 @@ function math_inline(state: StateInline, silent: boolean) {
     state.pos = start;
     return true;
   }
-
   if (!silent) {
-    token = state.push("math_inline", "math", 0);
+    const token = state.push("math_inline", "math", 0);
     token.markup = "$";
     token.content = state.src.slice(start, match);
   }
-
   state.pos = match + 1;
   return true;
 }
-
-function math_block(
+function blockMath(
   state: StateBlock,
   start: number,
   end: number,
   silent: boolean
 ) {
-  let firstLine = "",
-    lastLine = "",
-    next: number,
-    lastPos: number,
+  var lastLine,
+    next,
+    lastPos,
     found = false,
-    token: Token,
+    token,
     pos = state.bMarks[start] + state.tShift[start],
     max = state.eMarks[start];
-
   if (pos + 2 > max) {
     return false;
   }
   if (state.src.slice(pos, pos + 2) !== "$$") {
     return false;
   }
-
   pos += 2;
-  firstLine = state.src.slice(pos, max);
-
+  let firstLine = state.src.slice(pos, max);
   if (silent) {
     return true;
   }
@@ -145,31 +156,28 @@ function math_block(
     firstLine = firstLine.trim().slice(0, -2);
     found = true;
   }
-
   for (next = start; !found; ) {
     next++;
-
     if (next >= end) {
       break;
     }
-
     pos = state.bMarks[next] + state.tShift[next];
     max = state.eMarks[next];
-
     if (pos < max && state.tShift[next] < state.blkIndent) {
       // non-empty line with negative indent should stop the list:
       break;
     }
-
     if (state.src.slice(pos, max).trim().slice(-2) === "$$") {
       lastPos = state.src.slice(0, max).lastIndexOf("$$");
       lastLine = state.src.slice(pos, lastPos);
       found = true;
+    } else if (state.src.slice(pos, max).trim().includes("$$")) {
+      lastPos = state.src.slice(0, max).trim().indexOf("$$");
+      lastLine = state.src.slice(pos, lastPos);
+      found = true;
     }
   }
-
   state.line = next + 1;
-
   token = state.push("math_block", "math", 0);
   token.block = true;
   token.content =
@@ -180,12 +188,90 @@ function math_block(
   token.markup = "$$";
   return true;
 }
-
+function inlineMathBlock(state: StateInline, silent: boolean) {
+  var start, match, token, res, pos;
+  if (state.src.slice(state.pos, state.pos + 2) !== "$$") {
+    return false;
+  }
+  res = isValidBlockDelim(state, state.pos);
+  if (!res.can_open) {
+    if (!silent) {
+      state.pending += "$$";
+    }
+    state.pos += 2;
+    return true;
+  }
+  // First check for and bypass all properly escaped delimieters
+  // This loop will assume that the first leading backtick can not
+  // be the first character in state.src, which is known since
+  // we have found an opening delimieter already.
+  start = state.pos + 2;
+  match = start;
+  while ((match = state.src.indexOf("$$", match)) !== -1) {
+    // Found potential $$, look for escapes, pos will point to
+    // first non escape when complete
+    pos = match - 1;
+    while (state.src[pos] === "\\") {
+      pos -= 1;
+    }
+    // Even number of escapes, potential closing delimiter found
+    if ((match - pos) % 2 == 1) {
+      break;
+    }
+    match += 2;
+  }
+  // No closing delimter found.  Consume $$ and continue.
+  if (match === -1) {
+    if (!silent) {
+      state.pending += "$$";
+    }
+    state.pos = start;
+    return true;
+  }
+  // Check if we have empty content, ie: $$$$.  Do not parse.
+  if (match - start === 0) {
+    if (!silent) {
+      state.pending += "$$$$";
+    }
+    state.pos = start + 2;
+    return true;
+  }
+  // Check for valid closing delimiter
+  res = isValidBlockDelim(state, match);
+  if (!res.can_close) {
+    if (!silent) {
+      state.pending += "$$";
+    }
+    state.pos = start;
+    return true;
+  }
+  if (!silent) {
+    token = state.push("math_block", "math", 0);
+    token.block = true;
+    token.markup = "$$";
+    token.content = state.src.slice(start, match);
+  }
+  state.pos = match + 2;
+  return true;
+}
 export = function math_plugin(md: MarkdownIt) {
-  md.inline.ruler.after("escape", "math_inline", math_inline);
-  md.block.ruler.after("blockquote", "math_block", math_block, {
+  md.inline.ruler.after("escape", "math_inline", inlineMath);
+  md.inline.ruler.after("escape", "math_inline_block", inlineMathBlock);
+  md.block.ruler.after("blockquote", "math_block", blockMath, {
     alt: ["paragraph", "reference", "blockquote", "list"],
   });
-  md.renderer.rules.math_inline = (tokens, idx) => `$${tokens[idx].content}$`;
-  md.renderer.rules.math_block = (tokens, idx) => `<p>$$${tokens[idx].content}$$</p>`;
+  md.renderer.rules.math_inline = (tokens, idx) => {
+    const content = tokens[idx].content;
+    // To support expression like $`1+1 = 2`$, check if the the expression has leading and trailing "`".
+    const hasBacktick =
+      content.length > 2 &&
+      content[0] === "`" &&
+      content[content.length - 1] === "`";
+    const sanitized = hasBacktick ? content.slice(1, -1) : content;
+    return `$${sanitized}$`;
+  };
+  md.renderer.rules.math_inline_block = md.renderer.rules.math_block = (
+    tokens,
+    idx
+  ) => `<p>$$${tokens[idx].content}$$</p>`;
 };

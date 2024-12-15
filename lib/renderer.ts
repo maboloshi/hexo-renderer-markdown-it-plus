@@ -138,10 +138,6 @@ export = function (this: Hexo, data: { text: string }): string {
   config.plugins = config.plugins || [];
   const plugins = checkPlugins(config.plugins, config);
 
-  if (config.rawLaTeX) {
-    md.use(require("./markdown-it-raw-latex/index.js"));
-  }
-
   md = plugins.reduce((mdInstance, pug) => {
     if (pug.enable) {
       let plugin = require(pug.name);
@@ -162,6 +158,10 @@ export = function (this: Hexo, data: { text: string }): string {
     }
     return mdInstance;
   }, md);
+
+  if (config.rawLaTeX) {
+    md.use(require("./markdown-it-raw-latex/index.js"));
+  }
 
   return md.render(data.text);
 };
