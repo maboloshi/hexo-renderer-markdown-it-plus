@@ -1,6 +1,7 @@
 // https://github.com/microsoft/vscode-markdown-it-katex
 import type MarkdownIt from "markdown-it";
-import type { Token, StateBlock, StateInline } from "markdown-it";
+import type { StateBlock, StateInline } from "markdown-it";
+import { escapeHTML } from "hexo-util";
 
 function isWhitespace(char: string) {
   return /^\s$/u.test(char);
@@ -268,10 +269,10 @@ export = function math_plugin(md: MarkdownIt) {
       content[0] === "`" &&
       content[content.length - 1] === "`";
     const sanitized = hasBacktick ? content.slice(1, -1) : content;
-    return `$${sanitized}$`;
+    return `$${escapeHTML(sanitized)}$`;
   };
   md.renderer.rules.math_inline_block = md.renderer.rules.math_block = (
     tokens,
     idx
-  ) => `<p>$$${tokens[idx].content}$$</p>`;
+  ) => `<p>$$${escapeHTML(tokens[idx].content)}$$</p>`;
 };
