@@ -20,6 +20,7 @@ The highlight.js has been removed, the KaTeX version has been upgraded, and the 
 + [abbr](https://www.npmjs.com/package/markdown-it-abbr)
 + [footnote](https://www.npmjs.com/package/markdown-it-footnote)
 + [mark](https://www.npmjs.com/package/markdown-it-mark)
++ [container](https://www.npmjs.com/package/markdown-it-container)
 
 ## Install
 ```shell
@@ -75,6 +76,7 @@ plugins enabled by default:
  + `markdown-it-mark`  
  + `@vscode/markdown-it-katex`  
  + `markdown-it-toc-and-anchor`  
+ + `markdown-it-container`
 
 ## Add other `markdown-it` Plugins
 If you want to add a plugin named as `markdown-it-something`:  

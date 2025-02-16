@@ -422,4 +422,64 @@ belong to the previous footnote. <a href="#fnref2" class="footnote-backref">â†©ï
 </p>
 <h1 id="heading"><a class="markdownIt-Anchor" href="#heading"></a> Heading</h1>\n`);
   });
+
+  it('plugin - container - warning', () => {
+    const Hexo = {
+      config: {
+        markdown_it_plus: {
+          plugins: [
+            {
+              plugin: {
+                name: "markdown-it-container",
+                enable: true,
+              },
+            },
+          ],
+        },
+      },
+    };
+    const data = {
+      text: "::: warning\n*here be dragons*\n:::",
+    };
+    const result = render.call(Hexo, data);
+    expect(result).toBe("<div class=\"warning custom-block\"><p class=\"custom-block-title\">WARNING</p>\n<p><em>here be dragons</em></p>\n</div>\n");
+
+    data.text = "::: warning custom-title\n*here be dragons*\n:::";
+    const result3 = render.call(Hexo, data);
+    expect(result3).toBe("<div class=\"warning custom-block\"><p class=\"custom-block-title\">custom-title</p>\n<p><em>here be dragons</em></p>\n</div>\n");
+
+    Hexo.config.markdown_it_plus.plugins[0].plugin.enable = false;
+    const result2 = render.call(Hexo, data);
+    expect(result2).toBe("<p>::: warning custom-title<br />\n<em>here be dragons</em><br />\n:::</p>\n");
+  });
+
+  it('plugin - container - details', () => {
+    const Hexo = {
+      config: {
+        markdown_it_plus: {
+          plugins: [
+            {
+              plugin: {
+                name: "markdown-it-container",
+                enable: true,
+              },
+            },
+          ],
+        },
+      },
+    };
+    const data = {
+      text: "::: details\n*here be dragons*\n:::",
+    };
+    const result = render.call(Hexo, data);
+    expect(result).toBe("<details class=\"details custom-block\"><summary>Details</summary>\n<p><em>here be dragons</em></p>\n</details>\n");
+
+    data.text = "::: details custom-title\n*here be dragons*\n:::";
+    const result3 = render.call(Hexo, data);
+    expect(result3).toBe("<details class=\"details custom-block\"><summary>custom-title</summary>\n<p><em>here be dragons</em></p>\n</details>\n");
+
+    Hexo.config.markdown_it_plus.plugins[0].plugin.enable = false;
+    const result2 = render.call(Hexo, data);
+    expect(result2).toBe("<p>::: details custom-title<br />\n<em>here be dragons</em><br />\n:::</p>\n");
+  });
 });

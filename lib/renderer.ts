@@ -36,6 +36,7 @@ interface MarkdownItConfig {
 }
 
 const defPugsList: string[] = [
+  "markdown-it-container",
   "markdown-it-emoji",
   "markdown-it-sub",
   "markdown-it-sup",
@@ -140,21 +141,26 @@ export = function (this: Hexo, data: { text: string }): string {
 
   md = plugins.reduce((mdInstance, pug) => {
     if (pug.enable) {
-      let plugin = require(pug.name);
-      if (pug.name === "markdown-it-toc-and-anchor") {
-        pug.options = pug.options || {};
-        if (!pug.options.anchorLinkSymbol) pug.options.anchorLinkSymbol = "";
-        if (!pug.options.tocFirstLevel) pug.options.tocFirstLevel = 2;
+      if (pug.name === "markdown-it-container") {
+        const container = require("./markdown-it-container");
+        return md.use(container);
+      } else {
+        let plugin = require(pug.name);
+        if (pug.name === "markdown-it-toc-and-anchor") {
+          pug.options = pug.options || {};
+          if (!pug.options.anchorLinkSymbol) pug.options.anchorLinkSymbol = "";
+          if (!pug.options.tocFirstLevel) pug.options.tocFirstLevel = 2;
+        }
+        if (
+          typeof plugin !== "function" &&
+          typeof plugin.default === "function"
+        ) {
+          plugin = plugin.default;
+        }
+        return pug.options
+          ? mdInstance.use(plugin, pug.options)
+          : mdInstance.use(plugin);
       }
-      if (
-        typeof plugin !== "function" &&
-        typeof plugin.default === "function"
-      ) {
-        plugin = plugin.default;
-      }
-      return pug.options
-        ? mdInstance.use(plugin, pug.options)
-        : mdInstance.use(plugin);
     }
     return mdInstance;
   }, md);
