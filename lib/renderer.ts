@@ -130,43 +130,53 @@ function checkPlugins(
   return result;
 }
 
+function isDeepEqual(a: any, b: any): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+let md: MarkdownIt;
+let cachedParsedConfig: string;
+
 export = function (this: Hexo, data: { text: string }): string {
   const config: MarkdownItConfig = this.config?.markdown_it_plus || {};
-  const parseConfig = checkConfig(config);
+  if (!md || !isDeepEqual(cachedParsedConfig, config)) {
+    cachedParsedConfig = JSON.parse(JSON.stringify(config));
+    const parseConfig = checkConfig(config);
+    md = MarkdownIt(parseConfig);
 
-  let md = MarkdownIt(parseConfig);
+    config.plugins = config.plugins || [];
+    const plugins = checkPlugins(config.plugins, config);
 
-  config.plugins = config.plugins || [];
-  const plugins = checkPlugins(config.plugins, config);
-
-  md = plugins.reduce((mdInstance, pug) => {
-    if (pug.enable) {
-      if (pug.name === "markdown-it-container") {
-        const container = require("./markdown-it-container");
-        return md.use(container);
-      } else {
-        let plugin = require(pug.name);
-        if (pug.name === "markdown-it-toc-and-anchor") {
-          pug.options = pug.options || {};
-          if (!pug.options.anchorLinkSymbol) pug.options.anchorLinkSymbol = "";
-          if (!pug.options.tocFirstLevel) pug.options.tocFirstLevel = 2;
+    md = plugins.reduce((mdInstance, pug) => {
+      if (pug.enable) {
+        if (pug.name === "markdown-it-container") {
+          const container = require("./markdown-it-container");
+          return md.use(container);
+        } else {
+          let plugin = require(pug.name);
+          if (pug.name === "markdown-it-toc-and-anchor") {
+            pug.options = pug.options || {};
+            if (!pug.options.anchorLinkSymbol)
+              pug.options.anchorLinkSymbol = "";
+            if (!pug.options.tocFirstLevel) pug.options.tocFirstLevel = 2;
+          }
+          if (
+            typeof plugin !== "function" &&
+            typeof plugin.default === "function"
+          ) {
+            plugin = plugin.default;
+          }
+          return pug.options
+            ? mdInstance.use(plugin, pug.options)
+            : mdInstance.use(plugin);
         }
-        if (
-          typeof plugin !== "function" &&
-          typeof plugin.default === "function"
-        ) {
-          plugin = plugin.default;
-        }
-        return pug.options
-          ? mdInstance.use(plugin, pug.options)
-          : mdInstance.use(plugin);
       }
-    }
-    return mdInstance;
-  }, md);
+      return mdInstance;
+    }, md);
 
-  if (config.rawLaTeX) {
-    md.use(require("./markdown-it-raw-latex/index.js"));
+    if (config.rawLaTeX) {
+      md.use(require("./markdown-it-raw-latex/index.js"));
+    }
   }
 
   return md.render(data.text);
